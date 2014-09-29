@@ -1,0 +1,1 @@
+mxmlc ../src/Main.as -source-path ../src -output=../bin/ElementaryCellularAutomata.swf -target-player=9.0 -default-size=1000,800 -default-frame-rate=30 -allow-source-path-overlap=false -static-link-runtime-shared-libraries=true 
