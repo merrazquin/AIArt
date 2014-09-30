@@ -36,7 +36,7 @@ package
 			}
 			
 			var numCols:int = Math.floor(_width / $pixelSize);
-			var numRows:int = Math.floor(_height / $pixelSize);
+			var numRows:int = Math.floor(_height / $pixelSize) - 1;
 			var firstGen:Array = [];
 			for(var i:int = 0; i < numCols; i++)
 			{

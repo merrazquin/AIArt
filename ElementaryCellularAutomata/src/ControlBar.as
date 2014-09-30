@@ -7,6 +7,7 @@ package
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.text.TextField;
 	
 	/**
 	 * @author Marcela Errazquin
@@ -18,6 +19,7 @@ package
 		private var _ruleStepper:NumericStepper;
 		private var _sizeStepper:NumericStepper;
 		private var _colorPicker:ColorPicker;
+		private var _colorTF:TextField;
 		private var _addButton:Button;
 		private var _deleteButton:Button;
 		private var _moveUpButton:Button;
@@ -31,6 +33,7 @@ package
 			_ruleStepper = new NumericStepper();
 			_sizeStepper = new NumericStepper();
 			_colorPicker = new ColorPicker();
+			_colorTF = new TextField();
 			_addButton = new Button();
 			_deleteButton = new Button();
 			_refreshButton = new Button();
@@ -42,6 +45,7 @@ package
 			
 			addChild(_ruleStepper);
 			addChild(_sizeStepper);
+			addChild(_colorTF);
 			addChild(_colorPicker);
 			addChild(_addButton);	
 			addChild(_deleteButton);
@@ -88,7 +92,7 @@ package
 		
 		private function onAddColor($event:MouseEvent):void 
 		{
-			_colorList.addItem( { label:_colorPicker.hexValue, data:_colorPicker.selectedColor, icon:ListIcon, order: _colorList.length } );
+			_colorList.addItem( { label:_colorTF.text.toLowerCase(), data:parseInt(_colorTF.text, 16), icon:ListIcon, order: _colorList.length } );
 			
 			dispatchEvent(new Event(Event.CHANGE));
 		}
@@ -105,7 +109,18 @@ package
 		{
 			$event.stopImmediatePropagation();
 			
-			if ($event.target != _colorPicker && $event.target != _colorList) dispatchEvent(new Event(Event.CHANGE));
+			if ($event.target != _colorPicker && $event.target != _colorList && $event.target != _colorTF) dispatchEvent(new Event(Event.CHANGE));
+			
+			if ($event.target == _colorPicker)
+			{
+				_colorTF.text = _colorPicker.hexValue;
+			}
+			if ($event.target == _colorTF)
+			{
+				_colorPicker.selectedColor = parseInt(_colorTF.text, 16);
+			}
+			
+			trace("EVENT " + $event.target);
 		}
 		
 		private function configureControls():void 
@@ -128,6 +143,15 @@ package
 			_refreshButton.label = "R";
 			_refreshButton.setSize(40, _refreshButton.height);
 			
+			_colorTF.border = true;
+			_colorTF.type = "input";
+			_colorTF.restrict = "[0-9A-Fa-f]";
+			_colorTF.maxChars = 6;
+			_colorTF.multiline = _colorTF.wordWrap = false;
+			_colorTF.text = _colorPicker.hexValue;
+			_colorTF.width = 50;
+			_colorTF.height = _colorTF.textHeight + 5;
+			
 			_colorList.iconField = "icon";
 			_colorList.allowMultipleSelection = true;
 			
@@ -142,10 +166,11 @@ package
 			_moveDownButton.label = "v";
 			_moveDownButton.width = 40;
 			
-			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorPicker.y = _addButton.y = _moveUpButton.y = _colorList.y = 5;
+			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorTF.y = _addButton.y = _moveUpButton.y = _colorList.y = 5;
 			_sizeStepper.x = _ruleStepper.x + _ruleStepper.width + 10;
-			_colorPicker.x = _sizeStepper.x + _sizeStepper.width + 10;
-			_addButton.x  = _deleteButton.x = _refreshButton.x = _colorPicker.x + _colorPicker.width + 10;
+			_colorTF.x = _colorPicker.x = _sizeStepper.x + _sizeStepper.width + 10;
+			_colorPicker.y = _colorTF.y + _colorTF.height + 10;
+			_addButton.x  = _deleteButton.x = _refreshButton.x = _colorTF.x + _colorTF.width + 10;
 			_deleteButton.y = _addButton.y + _addButton.height + 10;
 			_refreshButton.y = _deleteButton.y + _deleteButton.height + 10;
 			_colorList.x = _addButton.x + _addButton.width + 10;
@@ -154,6 +179,7 @@ package
 			
 			_sizeStepper.addEventListener(Event.CHANGE, onRuleChanged);
 			_ruleStepper.addEventListener(Event.CHANGE, onRuleChanged);
+			_colorTF.addEventListener(Event.CHANGE, onRuleChanged);
 			_colorPicker.addEventListener(Event.CHANGE, onRuleChanged);
 			_colorList.addEventListener(Event.CHANGE, onRuleChanged);
 			_addButton.addEventListener(MouseEvent.CLICK, onAddColor);
