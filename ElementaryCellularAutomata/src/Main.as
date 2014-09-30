@@ -1,12 +1,8 @@
-﻿package 
+package 
 {
 	import flash.display.Graphics;
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import fl.controls.NumericStepper;
-	import fl.controls.ColorPicker;
-	import fl.controls.List;
-	import fl.controls.Button;
 	
 	/**
 	 * ...
@@ -14,13 +10,7 @@
 	 */
 	public class Main extends Sprite 
 	{
-		private var _ruleStepper:NumericStepper;
-		private var _sizeStepper:NumericStepper;
-		private var _colorPicker:ColorPicker;
-		private var _addButton:Button;
-		private var _deleteButton:Button;
-		private var _colorList:List;
-		
+		private var _controlBar:ControlBar;
 		public function Main():void 
 		{
 			if (stage) init();
@@ -36,32 +26,11 @@
 		
 		private function createUI():void 
 		{
-			_ruleStepper = new NumericStepper();
-			_ruleStepper.minimum = 0;
-			_ruleStepper.maximum = 255;
-			_ruleStepper.value = 102
-			_ruleStepper.addEventListener(Event.CHANGE, onRuleChanged);
-			addChild(_ruleStepper);
-			
-			_sizeStepper = new NumericStepper();
-			_sizeStepper.minimum = 5;
-			_sizeStepper.maximum = 100;
-			_sizeStepper.value = 30;
-			_sizeStepper.stepSize = 5;
-			_sizeStepper.addEventListener(Event.CHANGE, onRuleChanged);
-			_sizeStepper.x = _ruleStepper.width + 10;
-			addChild(_sizeStepper);
-			
-			_colorPicker = new ColorPicker();
-			_colorPicker.y = _ruleStepper.height + 10;
-			addChild(_colorPicker);
-			
-			_addButton = new Button();
-			_addButton.label = "+";
-			_addButton.setSize(40, _addButton.height);
-			_addButton.x = _colorPicker.x + 40;
-			_addButton.y = _colorPicker.y;
-			addChild(_addButton);
+			_controlBar = new ControlBar();
+			_controlBar.addEventListener(Event.CHANGE, onRuleChanged);
+			_controlBar.y = stage.stageHeight - _controlBar.height;
+			addChild(_controlBar);
+
 		}
 		
 		private function onRuleChanged(e:Event):void 
@@ -72,8 +41,8 @@
 		private function redraw():void 
 		{
 			graphics.clear();
-			var rules:Array = RulesE.getRules(_ruleStepper.value);
-			var colors:Array = [0xF04B55, 0xF48D9B, 0xADD8D6, 0x03A08E, 0xEFECD1];
+			var rules:Array = RulesE.getRules(_controlBar.rule);
+			var colors:Array = _controlBar.colors;
 			for each(var rule:RulesE in rules)
 			{
 				var color:uint = colors.shift();
@@ -85,9 +54,9 @@
 				rule.secondaryColor = color;
 			}
 			
-			var pixelSize:Number = _sizeStepper.value;
+			var pixelSize:Number = _controlBar.pixelSize;
 			var numCols:int = Math.floor(stage.stageWidth / pixelSize);
-			var numRows:int = Math.floor(stage.stageHeight / pixelSize);
+			var numRows:int = Math.floor((stage.stageHeight - _controlBar.height) / pixelSize);
 			var firstGen:Array = [];
 			for(var i:int = 0; i < numCols; i++)
 			{
@@ -95,10 +64,9 @@
 			}
 			var centerCell:Cell = firstGen[Math.round(numCols/2)];
 			centerCell.state = 1;
-			centerCell.primaryColor = colors[0];
-			centerCell.secondaryColor = colors[1];
+			colors.push(centerCell.primaryColor = colors.shift());
+			colors.push(centerCell.secondaryColor = colors.shift());
 			var gen:Array = createGenerations([firstGen], rules, numRows);
-			printGenerations(gen);
 			drawGenerations(gen, pixelSize);			
 		}
 		
