@@ -116,10 +116,10 @@ package
 			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorPicker.y = _addButton.y = _colorList.y = 5;
 			_sizeStepper.x = _ruleStepper.x + _ruleStepper.width + 10;
 			_colorPicker.x = _sizeStepper.x + _sizeStepper.width + 10;
-			_addButton.x  = _colorPicker.x + _colorPicker.width + 20;
+			_addButton.x  = _colorPicker.x + _colorPicker.width + 10;
 			_deleteButton.x = _addButton.x;
-			_deleteButton.y = _addButton.y + _addButton.height + 20;
-			_colorList.x = _addButton.x + _addButton.width + 20;
+			_deleteButton.y = _addButton.y + _addButton.height + 10;
+			_colorList.x = _addButton.x + _addButton.width + 10;
 			
 			_sizeStepper.addEventListener(Event.CHANGE, onRuleChanged);
 			_ruleStepper.addEventListener(Event.CHANGE, onRuleChanged);
