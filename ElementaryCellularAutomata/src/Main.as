@@ -1,8 +1,12 @@
-package 
+﻿package 
 {
 	import flash.display.Graphics;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import fl.controls.NumericStepper;
+	import fl.controls.ColorPicker;
+	import fl.controls.List;
+	import fl.controls.Button;
 	
 	/**
 	 * ...
@@ -10,6 +14,12 @@ package
 	 */
 	public class Main extends Sprite 
 	{
+		private var _ruleStepper:NumericStepper;
+		private var _sizeStepper:NumericStepper;
+		private var _colorPicker:ColorPicker;
+		private var _addButton:Button;
+		private var _deleteButton:Button;
+		private var _colorList:List;
 		
 		public function Main():void 
 		{
@@ -20,9 +30,50 @@ package
 		private function init(e:Event = null):void 
 		{
 			removeEventListener(Event.ADDED_TO_STAGE, init);
-			var rules:Array = RulesE.getRules(18);
+			createUI();
+			redraw();
+		}
+		
+		private function createUI():void 
+		{
+			_ruleStepper = new NumericStepper();
+			_ruleStepper.minimum = 0;
+			_ruleStepper.maximum = 255;
+			_ruleStepper.value = 102
+			_ruleStepper.addEventListener(Event.CHANGE, onRuleChanged);
+			addChild(_ruleStepper);
+			
+			_sizeStepper = new NumericStepper();
+			_sizeStepper.minimum = 5;
+			_sizeStepper.maximum = 100;
+			_sizeStepper.value = 30;
+			_sizeStepper.stepSize = 5;
+			_sizeStepper.addEventListener(Event.CHANGE, onRuleChanged);
+			_sizeStepper.x = _ruleStepper.width + 10;
+			addChild(_sizeStepper);
+			
+			_colorPicker = new ColorPicker();
+			_colorPicker.y = _ruleStepper.height + 10;
+			addChild(_colorPicker);
+			
+			_addButton = new Button();
+			_addButton.label = "+";
+			_addButton.setSize(40, _addButton.height);
+			_addButton.x = _colorPicker.x + 40;
+			_addButton.y = _colorPicker.y;
+			addChild(_addButton);
+		}
+		
+		private function onRuleChanged(e:Event):void 
+		{
+			redraw();
+		}
+		
+		private function redraw():void 
+		{
+			graphics.clear();
+			var rules:Array = RulesE.getRules(_ruleStepper.value);
 			var colors:Array = [0xF04B55, 0xF48D9B, 0xADD8D6, 0x03A08E, 0xEFECD1];
-			colors.sort();
 			for each(var rule:RulesE in rules)
 			{
 				var color:uint = colors.shift();
@@ -33,10 +84,22 @@ package
 				colors.push(color);
 				rule.secondaryColor = color;
 			}
-			var firstGen:Array = [new Cell(1, colors[0], colors[1])];
-			var gen:Array = createGenerations([firstGen], rules, 8);
+			
+			var pixelSize:Number = _sizeStepper.value;
+			var numCols:int = Math.floor(stage.stageWidth / pixelSize);
+			var numRows:int = Math.floor(stage.stageHeight / pixelSize);
+			var firstGen:Array = [];
+			for(var i:int = 0; i < numCols; i++)
+			{
+				firstGen.push(new Cell());
+			}
+			var centerCell:Cell = firstGen[Math.round(numCols/2)];
+			centerCell.state = 1;
+			centerCell.primaryColor = colors[0];
+			centerCell.secondaryColor = colors[1];
+			var gen:Array = createGenerations([firstGen], rules, numRows);
 			printGenerations(gen);
-			drawGenerations(gen, 50);
+			drawGenerations(gen, pixelSize);			
 		}
 		
 		private function drawGenerations($gen:Array, pixelSize:Number):void 
@@ -120,18 +183,9 @@ package
 		
 		private function createGenerations($generations:Array, $rules:Array/*RulesE*/, $depth:int):Array 
 		{
-			if (!$depth)
+			if (!$depth || !$generations.length)
 			{
 				return $generations;
-			}
-			if (!$generations.length)
-			{
-				$generations.push([new Cell(1)]);
-			}
-			for each(var gen:Array in $generations)
-			{
-				gen.unshift(new Cell());
-				gen.push(new Cell());
 			}
 			
 			var currentGeneration:Array = $generations[$generations.length - 1];
