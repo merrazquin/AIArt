@@ -20,6 +20,8 @@ package
 		private var _colorPicker:ColorPicker;
 		private var _addButton:Button;
 		private var _deleteButton:Button;
+		private var _moveUpButton:Button;
+		private var _moveDownButton:Button;
 		private var _colorList:List;
 		private var _refreshButton:Button;
 		
@@ -31,8 +33,10 @@ package
 			_colorPicker = new ColorPicker();
 			_addButton = new Button();
 			_deleteButton = new Button();
-			_colorList = new List();
 			_refreshButton = new Button();
+			_colorList = new List();
+			_moveUpButton = new Button();
+			_moveDownButton = new Button();
 			
 			configureControls();
 			
@@ -40,9 +44,11 @@ package
 			addChild(_sizeStepper);
 			addChild(_colorPicker);
 			addChild(_addButton);	
-			addChild(_colorList);
 			addChild(_deleteButton);
 			addChild(_refreshButton);
+			addChild(_colorList);
+			addChild(_moveUpButton);
+			addChild(_moveDownButton);
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStage);
 		}
@@ -53,7 +59,7 @@ package
 		public function get colors():Array 
 		{ 
 			var arr:Array = [];
-			for (var i:int = 0; i < _colorList.dataProvider.length; i++) 
+			for (var i:int = 0; i < _colorList.length; i++) 
 			{
 				arr.push(_colorList.getItemAt(i).data);
 			}
@@ -68,13 +74,21 @@ package
 				{
 					_colorList.removeItem(item);
 				}
+				
+				for (var i:int = 0; i < _colorList.length; i++) 
+				{
+					_colorList.getItemAt(i).order = i;
+				}
+				
+				_colorList.sortItemsOn("order");
+				
 				dispatchEvent(new Event(Event.CHANGE));
 			}
 		}
 		
 		private function onAddColor($event:MouseEvent):void 
 		{
-			_colorList.addItem( { label:_colorPicker.hexValue, data:_colorPicker.selectedColor, icon:ListIcon } );
+			_colorList.addItem( { label:_colorPicker.hexValue, data:_colorPicker.selectedColor, icon:ListIcon, order: _colorList.length } );
 			
 			dispatchEvent(new Event(Event.CHANGE));
 		}
@@ -111,7 +125,7 @@ package
 			_deleteButton.label = "-";
 			_deleteButton.setSize(40, _deleteButton.height);
 			
-			_refreshButton.label = "⟳";
+			_refreshButton.label = "R";
 			_refreshButton.setSize(40, _refreshButton.height);
 			
 			_colorList.iconField = "icon";
@@ -119,16 +133,24 @@ package
 			
 			for each(var color:uint in DEFAULT_COLORS)
 			{
-				_colorList.addItem( { label:color.toString(16), data:color, icon:ListIcon } );
+				_colorList.addItem( { label:color.toString(16), data:color, icon:ListIcon, order: _colorList.length } );
 			}
 			
-			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorPicker.y = _addButton.y = _colorList.y = 5;
+			_moveUpButton.label = "^";
+			_moveUpButton.width = 40;
+			
+			_moveDownButton.label = "v";
+			_moveDownButton.width = 40;
+			
+			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorPicker.y = _addButton.y = _moveUpButton.y = _colorList.y = 5;
 			_sizeStepper.x = _ruleStepper.x + _ruleStepper.width + 10;
 			_colorPicker.x = _sizeStepper.x + _sizeStepper.width + 10;
 			_addButton.x  = _deleteButton.x = _refreshButton.x = _colorPicker.x + _colorPicker.width + 10;
 			_deleteButton.y = _addButton.y + _addButton.height + 10;
 			_refreshButton.y = _deleteButton.y + _deleteButton.height + 10;
 			_colorList.x = _addButton.x + _addButton.width + 10;
+			_moveUpButton.x = _moveDownButton.x = _colorList.x + _colorList.width + 10;
+			_moveDownButton.y = _moveUpButton.y + _moveUpButton.height + 10;
 			
 			_sizeStepper.addEventListener(Event.CHANGE, onRuleChanged);
 			_ruleStepper.addEventListener(Event.CHANGE, onRuleChanged);
@@ -137,6 +159,36 @@ package
 			_addButton.addEventListener(MouseEvent.CLICK, onAddColor);
 			_deleteButton.addEventListener(MouseEvent.CLICK, onDeleteColor);
 			_refreshButton.addEventListener(MouseEvent.CLICK, onRuleChanged);
+			_moveUpButton.addEventListener(MouseEvent.CLICK, onColorReorder);
+			_moveDownButton.addEventListener(MouseEvent.CLICK, onColorReorder);
+		}
+		
+		private function onColorReorder($event:MouseEvent):void 
+		{
+			var selectedIndex:int = _colorList.selectedIndex;
+			if (selectedIndex == -1)
+			{
+				return;
+			}
+			var update:Boolean = false;
+			if ($event.target == _moveUpButton && selectedIndex > 0)
+			{
+				_colorList.selectedItem.order -= 1;
+				_colorList.getItemAt(selectedIndex - 1).order += 1;
+				update = true;
+			}
+			if ($event.target == _moveDownButton && selectedIndex < _colorList.length - 1)
+			{
+				_colorList.selectedItem.order++;
+				_colorList.getItemAt(selectedIndex + 1).order--;
+				update = true;
+			}
+			
+			if (update)
+			{
+				_colorList.sortItemsOn("order");
+				dispatchEvent(new Event(Event.CHANGE));
+			}
 		}
 	}
 
