@@ -14,12 +14,14 @@ package
 	public class ControlBar extends Sprite
 	{
 		private static const DEFAULT_COLORS:Array = [0xF04B55, 0xF48D9B, 0xADD8D6, 0x03A08E, 0xEFECD1];
+		
 		private var _ruleStepper:NumericStepper;
 		private var _sizeStepper:NumericStepper;
 		private var _colorPicker:ColorPicker;
 		private var _addButton:Button;
 		private var _deleteButton:Button;
 		private var _colorList:List;
+		private var _refreshButton:Button;
 		
 		public function ControlBar()
 		{
@@ -30,6 +32,7 @@ package
 			_addButton = new Button();
 			_deleteButton = new Button();
 			_colorList = new List();
+			_refreshButton = new Button();
 			
 			configureControls();
 			
@@ -39,12 +42,14 @@ package
 			addChild(_addButton);	
 			addChild(_colorList);
 			addChild(_deleteButton);
+			addChild(_refreshButton);
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStage);
 		}
 		
 		public function get rule():uint { return _ruleStepper.value; }
 		public function get pixelSize():uint { return _sizeStepper.value; }
+		
 		public function get colors():Array 
 		{ 
 			var arr:Array = [];
@@ -86,7 +91,7 @@ package
 		{
 			$event.stopImmediatePropagation();
 			
-			if ($event.target != _colorPicker && $event.target != _colorList) dispatchEvent($event.clone());
+			if ($event.target != _colorPicker && $event.target != _colorList) dispatchEvent(new Event(Event.CHANGE));
 		}
 		
 		private function configureControls():void 
@@ -106,8 +111,12 @@ package
 			_deleteButton.label = "-";
 			_deleteButton.setSize(40, _deleteButton.height);
 			
+			_refreshButton.label = "⟳";
+			_refreshButton.setSize(40, _refreshButton.height);
+			
 			_colorList.iconField = "icon";
 			_colorList.allowMultipleSelection = true;
+			
 			for each(var color:uint in DEFAULT_COLORS)
 			{
 				_colorList.addItem( { label:color.toString(16), data:color, icon:ListIcon } );
@@ -116,9 +125,9 @@ package
 			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorPicker.y = _addButton.y = _colorList.y = 5;
 			_sizeStepper.x = _ruleStepper.x + _ruleStepper.width + 10;
 			_colorPicker.x = _sizeStepper.x + _sizeStepper.width + 10;
-			_addButton.x  = _colorPicker.x + _colorPicker.width + 10;
-			_deleteButton.x = _addButton.x;
+			_addButton.x  = _deleteButton.x = _refreshButton.x = _colorPicker.x + _colorPicker.width + 10;
 			_deleteButton.y = _addButton.y + _addButton.height + 10;
+			_refreshButton.y = _deleteButton.y + _deleteButton.height + 10;
 			_colorList.x = _addButton.x + _addButton.width + 10;
 			
 			_sizeStepper.addEventListener(Event.CHANGE, onRuleChanged);
@@ -127,6 +136,7 @@ package
 			_colorList.addEventListener(Event.CHANGE, onRuleChanged);
 			_addButton.addEventListener(MouseEvent.CLICK, onAddColor);
 			_deleteButton.addEventListener(MouseEvent.CLICK, onDeleteColor);
+			_refreshButton.addEventListener(MouseEvent.CLICK, onRuleChanged);
 		}
 	}
 
