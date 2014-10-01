@@ -1,4 +1,4 @@
-package
+﻿package
 {
 	import fl.controls.Button;
 	import fl.controls.ColorPicker;
@@ -26,6 +26,7 @@ package
 		private var _moveDownButton:Button;
 		private var _colorList:List;
 		private var _refreshButton:Button;
+		private var _saveButton:Button;
 		
 		public function ControlBar()
 		{
@@ -37,9 +38,10 @@ package
 			_addButton = new Button();
 			_deleteButton = new Button();
 			_refreshButton = new Button();
+			_saveButton = new Button();
 			_colorList = new List();
 			_moveUpButton = new Button();
-			_moveDownButton = new Button();
+			_moveDownButton = new Button();			
 			
 			configureControls();
 			
@@ -50,6 +52,7 @@ package
 			addChild(_addButton);	
 			addChild(_deleteButton);
 			addChild(_refreshButton);
+			addChild(_saveButton);
 			addChild(_colorList);
 			addChild(_moveUpButton);
 			addChild(_moveDownButton);
@@ -135,13 +138,16 @@ package
 			_sizeStepper.stepSize = 5;
 			
 			_addButton.label = "+";
-			_addButton.setSize(40, _addButton.height);
+			_addButton.width = 40;
 			
 			_deleteButton.label = "-";
-			_deleteButton.setSize(40, _deleteButton.height);
+			_deleteButton.width = 40;
 			
 			_refreshButton.label = "R";
-			_refreshButton.setSize(40, _refreshButton.height);
+			_refreshButton.width = 40;
+			
+			_saveButton.label = "Save";
+			_saveButton.width = 40;
 			
 			_colorTF.border = true;
 			_colorTF.type = "input";
@@ -170,9 +176,10 @@ package
 			_sizeStepper.x = _ruleStepper.x + _ruleStepper.width + 10;
 			_colorTF.x = _colorPicker.x = _sizeStepper.x + _sizeStepper.width + 10;
 			_colorPicker.y = _colorTF.y + _colorTF.height + 10;
-			_addButton.x  = _deleteButton.x = _refreshButton.x = _colorTF.x + _colorTF.width + 10;
+			_addButton.x  = _deleteButton.x = _refreshButton.x = _saveButton.x = _colorTF.x + _colorTF.width + 10;
 			_deleteButton.y = _addButton.y + _addButton.height + 10;
 			_refreshButton.y = _deleteButton.y + _deleteButton.height + 10;
+			_saveButton.y = _refreshButton.y + _refreshButton.height + 10;
 			_colorList.x = _addButton.x + _addButton.width + 10;
 			_moveUpButton.x = _moveDownButton.x = _colorList.x + _colorList.width + 10;
 			_moveDownButton.y = _moveUpButton.y + _moveUpButton.height + 10;
@@ -185,6 +192,7 @@ package
 			_addButton.addEventListener(MouseEvent.CLICK, onAddColor);
 			_deleteButton.addEventListener(MouseEvent.CLICK, onDeleteColor);
 			_refreshButton.addEventListener(MouseEvent.CLICK, onRuleChanged);
+			_saveButton.addEventListener(MouseEvent.CLICK, onSaveButtonClicked);
 			_moveUpButton.addEventListener(MouseEvent.CLICK, onColorReorder);
 			_moveDownButton.addEventListener(MouseEvent.CLICK, onColorReorder);
 		}
@@ -215,6 +223,11 @@ package
 				_colorList.sortItemsOn("order");
 				dispatchEvent(new Event(Event.CHANGE));
 			}
+		}
+		
+		private function onSaveButtonClicked($event:MouseEvent):void 
+		{
+			dispatchEvent(new Event("save"));
 		}
 	}
 

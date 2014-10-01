@@ -1,8 +1,14 @@
-package 
+﻿package 
 {
 	import flash.display.Graphics;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import mx.graphics.codec.JPEGEncoder;
+	import flash.net.FileReference;
+	import flash.display.BitmapData;
+	import flash.utils.ByteArray;
+	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
 	
 	/**
 	 * ...
@@ -30,6 +36,7 @@ package
 		{
 			_controlBar = new ControlBar();
 			_controlBar.addEventListener(Event.CHANGE, onRuleChanged);
+			_controlBar.addEventListener("save", onSaveRequest);
 			_controlBar.y = stage.stageHeight - _controlBar.height;
 			addChild(_controlBar);
 
@@ -47,6 +54,22 @@ package
 			_canvas.redraw(_controlBar.rule, _controlBar.pixelSize, _controlBar.colors);
 		}
 		
+		private function onSaveRequest(e:Event):void 
+		{
+			
+			var bounds:Rectangle = _canvas.getBounds(_canvas);
+			var m:Matrix = new Matrix();
+			m.translate(-bounds.left, -bounds.top);
+
+			var bmpData:BitmapData = new BitmapData(bounds.width, bounds.height);
+			bmpData.draw(_canvas, m);
+			
+			var encoder:JPEGEncoder = new JPEGEncoder();
+			var byteArray:ByteArray = encoder.encode(bmpData);
+			
+			var fileRef:FileReference = new FileReference();
+			fileRef.save(byteArray, "Rule_" + _controlBar.rule + ".png");
+		}
 	}
 	
 }
