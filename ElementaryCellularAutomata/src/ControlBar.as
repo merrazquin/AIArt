@@ -1,6 +1,7 @@
 ﻿package
 {
 	import fl.controls.Button;
+	import fl.controls.CheckBox;
 	import fl.controls.ColorPicker;
 	import fl.controls.List;
 	import fl.controls.NumericStepper;
@@ -27,6 +28,8 @@
 		private var _colorList:List;
 		private var _refreshButton:Button;
 		private var _saveButton:Button;
+		private var _useCirclesCB:CheckBox;
+		private var _fillCirclesCB:CheckBox;
 		
 		public function ControlBar()
 		{
@@ -42,6 +45,8 @@
 			_colorList = new List();
 			_moveUpButton = new Button();
 			_moveDownButton = new Button();			
+			_useCirclesCB = new CheckBox();
+			_fillCirclesCB = new CheckBox();
 			
 			configureControls();
 			
@@ -56,6 +61,8 @@
 			addChild(_colorList);
 			addChild(_moveUpButton);
 			addChild(_moveDownButton);
+			addChild(_useCirclesCB);
+			addChild(_fillCirclesCB);
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStage);
 		}
@@ -73,6 +80,9 @@
 			return arr.length ? arr : [0];
 		}
 		
+		public function get useCircles():Boolean { return _useCirclesCB.selected; }
+		public function get fillCircles():Boolean { return _fillCirclesCB.selected; }
+		
 		private function onDeleteColor($event:MouseEvent):void 
 		{
 			if (_colorList.selectedItems.length)
@@ -86,8 +96,10 @@
 				{
 					_colorList.getItemAt(i).order = i;
 				}
-				
-				_colorList.sortItemsOn("order");
+				if (_colorList.length)
+				{
+					_colorList.sortItemsOn("order");
+				}
 				
 				dispatchEvent(new Event(Event.CHANGE));
 			}
@@ -112,8 +124,6 @@
 		{
 			$event.stopImmediatePropagation();
 			
-			if ($event.target != _colorPicker && $event.target != _colorList && $event.target != _colorTF) dispatchEvent(new Event(Event.CHANGE));
-			
 			if ($event.target == _colorPicker)
 			{
 				_colorTF.text = _colorPicker.hexValue;
@@ -123,7 +133,15 @@
 				_colorPicker.selectedColor = parseInt(_colorTF.text, 16);
 			}
 			
-			trace("EVENT " + $event.target);
+			if ($event.target == _useCirclesCB)
+			{
+				_fillCirclesCB.enabled = _useCirclesCB.selected;
+			}
+			
+			if ($event.target != _colorPicker && $event.target != _colorList && $event.target != _colorTF) 
+			{
+				dispatchEvent(new Event(Event.CHANGE));
+			}
 		}
 		
 		private function configureControls():void 
@@ -172,7 +190,14 @@
 			_moveDownButton.label = "v";
 			_moveDownButton.width = 40;
 			
-			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorTF.y = _addButton.y = _moveUpButton.y = _colorList.y = 5;
+			_useCirclesCB.label = "Circle Segments";
+			_useCirclesCB.width = 200;
+			
+			_fillCirclesCB.label = "Fill Circles";
+			_fillCirclesCB.width = 200;
+			_fillCirclesCB.enabled = false;
+			
+			_ruleStepper.x = _ruleStepper.y = _sizeStepper.y = _colorTF.y = _addButton.y = _moveUpButton.y = _colorList.y = _useCirclesCB.x = _fillCirclesCB.x = 5;
 			_sizeStepper.x = _ruleStepper.x + _ruleStepper.width + 10;
 			_colorTF.x = _colorPicker.x = _sizeStepper.x + _sizeStepper.width + 10;
 			_colorPicker.y = _colorTF.y + _colorTF.height + 10;
@@ -183,6 +208,8 @@
 			_colorList.x = _addButton.x + _addButton.width + 10;
 			_moveUpButton.x = _moveDownButton.x = _colorList.x + _colorList.width + 10;
 			_moveDownButton.y = _moveUpButton.y + _moveUpButton.height + 10;
+			_useCirclesCB.y = _ruleStepper.y + _ruleStepper.height + 10;
+			_fillCirclesCB.y = _useCirclesCB.y + _useCirclesCB.height + 10;
 			
 			_sizeStepper.addEventListener(Event.CHANGE, onRuleChanged);
 			_ruleStepper.addEventListener(Event.CHANGE, onRuleChanged);
@@ -195,6 +222,8 @@
 			_saveButton.addEventListener(MouseEvent.CLICK, onSaveButtonClicked);
 			_moveUpButton.addEventListener(MouseEvent.CLICK, onColorReorder);
 			_moveDownButton.addEventListener(MouseEvent.CLICK, onColorReorder);
+			_useCirclesCB.addEventListener(Event.CHANGE, onRuleChanged);
+			_fillCirclesCB.addEventListener(Event.CHANGE, onRuleChanged);
 		}
 		
 		private function onColorReorder($event:MouseEvent):void 

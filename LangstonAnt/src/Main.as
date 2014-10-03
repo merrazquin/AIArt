@@ -65,7 +65,6 @@ package
 				trace("ran out of cells");
 				return;
 			}
-			trace("cell.alive", cell.alive);
 			_ant.rotation += cell.alive ? 90 : -90;
 			_rotation += cell.alive ? 90 : -90;
 			if (_rotation < 0)
@@ -76,7 +75,6 @@ package
 			{
 				_rotation -= 360;
 			}
-			trace(_rotation);
 			cell.alive = !cell.alive;
 			
 			var newPoint:Point = currPos.clone();

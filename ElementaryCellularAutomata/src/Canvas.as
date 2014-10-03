@@ -12,6 +12,12 @@ package
 	{
 		private var _width:Number;
 		private var _height:Number;
+		
+		private var _rule:uint;
+		private var _ruleSet:Array;
+		private var _pixelSize:Number;
+		private var _generations:Array;
+		
 		public function Canvas($width:Number, $height:Number) 
 		{
 			super();
@@ -19,9 +25,8 @@ package
 			_height = $height;
 		}
 		
-		public function redraw($rule:uint, $pixelSize:Number, $colors:Array):void 
+		public function redraw($rule:uint, $pixelSize:Number, $colors:Array, $useCircles:Boolean, $fillCircles:Boolean):void 
 		{
-			graphics.clear();
 			//TODO: only recreate rules if rule has changed - Marcela Errazquin 9/30/2014 3:11 PM
 			var rules:Array = RulesE.getRules($rule);
 			for each(var rule:RulesE in rules)
@@ -49,11 +54,12 @@ package
 			
 			//TODO: only recreate generations if rule has changed - Marcela Errazquin 9/30/2014 3:11 PM
 			var gen:Array = createGenerations([firstGen], rules, numRows);
-			drawGenerations(gen, $pixelSize);			
+			drawGenerations(gen, $pixelSize, $useCircles, $fillCircles);			
 		}
 		
-		private function drawGenerations($gen:Array, pixelSize:Number):void 
+		private function drawGenerations($gen:Array, pixelSize:Number, $useCircles:Boolean = false, $fillCircles:Boolean = false):void 
 		{
+			graphics.clear();
 			var currX:Number = 0;
 			var currY:Number = 0;
 			for each(var generation:Array in $gen)
@@ -63,16 +69,48 @@ package
 					if (cell.state)
 					{
 						var random1:Number = Math.random();
-						var random2:Number = Math.random();
 						if (random1 > .5)
 						{
-							drawTLTriangle(graphics, random2 > .5 ? cell.primaryColor : cell.secondaryColor, currX, currY, pixelSize);
-							drawBRTriangle(graphics, random2 > .5 ? cell.secondaryColor : cell.primaryColor, currX, currY, pixelSize);
+							if ($useCircles)
+							{
+								if ($fillCircles)
+								{
+									drawFilledSemiCircle("tl", graphics, cell.primaryColor, currX, currY, pixelSize);
+									drawFilledSemiCircle("br", graphics, cell.secondaryColor, currX, currY, pixelSize);								
+								}
+								else
+								{
+									drawTLSemiCircle(graphics, cell.primaryColor, currX, currY, pixelSize);
+									drawBRSemiCircle(graphics, cell.secondaryColor, currX, currY, pixelSize);								
+								}
+							}
+							else
+							{
+								drawTLTriangle(graphics, cell.primaryColor, currX, currY, pixelSize);
+								drawBRTriangle(graphics, cell.secondaryColor, currX, currY, pixelSize);								
+							}
 						}
 						else
 						{
-							drawTRTriangle(graphics, random2 > .5 ? cell.primaryColor : cell.secondaryColor, currX, currY, pixelSize);
-							drawBLTriangle(graphics, random2 > .5 ? cell.secondaryColor : cell.primaryColor, currX, currY, pixelSize);
+							if ($useCircles)
+							{
+								if ($fillCircles)
+								{
+									drawFilledSemiCircle("tr", graphics, cell.primaryColor, currX, currY, pixelSize);
+									drawFilledSemiCircle("bl", graphics, cell.secondaryColor, currX, currY, pixelSize);								
+								}
+								else
+								{
+									drawTRSemiCircle(graphics, cell.primaryColor, currX, currY, pixelSize);
+									drawBLSemiCircle(graphics, cell.secondaryColor, currX, currY, pixelSize);								
+								}
+							}
+							else
+							{
+								
+								drawTRTriangle(graphics, cell.primaryColor, currX, currY, pixelSize);
+								drawBLTriangle(graphics, cell.secondaryColor, currX, currY, pixelSize);								
+							}
 						}
 					}
 					currX += pixelSize;
@@ -122,6 +160,83 @@ package
 			$graphics.endFill();
 		}
 		
+		private function drawTLSemiCircle($graphics:Graphics, $color:uint, $x:Number, $y:Number, $pizelSize:Number, $drawStems:Boolean = false):void 
+		{
+			$graphics.lineStyle(1, $color);
+			drawSegment($graphics, $x, $y, $pizelSize * .5, 0, 90, $drawStems);
+		}
+		
+		private function drawTRSemiCircle($graphics:Graphics, $color:uint, $x:Number, $y:Number, $pizelSize:Number, $drawStems:Boolean = false):void 
+		{
+			$graphics.lineStyle(1, $color);
+			drawSegment($graphics, $x + $pizelSize, $y, $pizelSize * .5, 90, 180, $drawStems);
+		}
+		
+		private function drawBLSemiCircle($graphics:Graphics, $color:uint, $x:Number, $y:Number, $pizelSize:Number, $drawStems:Boolean = false):void 
+		{
+			$graphics.lineStyle(1, $color);
+			drawSegment($graphics, $x, $y + $pizelSize, $pizelSize * .5, 270, 360, $drawStems);
+		}
+		
+		private function drawBRSemiCircle($graphics:Graphics, $color:uint, $x:Number, $y:Number, $pizelSize:Number, $drawStems:Boolean = false):void 
+		{
+			$graphics.lineStyle(1, $color);
+			drawSegment($graphics, $x + $pizelSize, $y, $pizelSize * .5, 180, 270, $drawStems);
+		}
+		
+		private function drawFilledSemiCircle($direction:String, $graphics:Graphics, $color:uint, $x:Number, $y:Number, $pizelSize:Number):void 
+		{
+			$graphics.beginFill($color);
+			
+			var drawingFuction:Function;
+			switch($direction.toUpperCase())
+			{
+				case "TL":
+					drawingFuction = drawTLSemiCircle;
+					break;
+				case "TR":
+					drawingFuction = drawTRSemiCircle;
+					break;
+				case "BL":
+					drawingFuction = drawBLSemiCircle;
+					break;
+				case "BR":
+					drawingFuction = drawBRSemiCircle;
+					break;
+			}
+			drawingFuction.call($direction, $graphics, $color, $x, $y, $pizelSize, true);
+			$graphics.endFill();
+		}
+
+		private function drawSegment(graphics:Graphics, x:Number, y:Number, r:Number, aStart:Number, aEnd:Number, drawStems:Boolean = false, step:Number = 1):void 
+		{
+			// More efficient to work in radians
+			var degreesPerRadian:Number = Math.PI / 180;
+			aStart *= degreesPerRadian;
+			aEnd *= degreesPerRadian;
+			step *= degreesPerRadian;
+
+			// Draw the segment
+			if (drawStems)
+			{
+				graphics.moveTo(x, y);
+			}
+			else
+			{
+				graphics.moveTo(x + r * Math.cos(aStart), y + r * Math.sin(aStart));
+			}
+			
+			for (var theta:Number = aStart; theta < aEnd; theta += Math.min(step, aEnd - theta)) 
+			{
+				graphics.lineTo(x + r * Math.cos(theta), y + r * Math.sin(theta));
+			}
+			
+			graphics.lineTo(x + r * Math.cos(aEnd), y + r * Math.sin(aEnd));
+			if (drawStems)
+			{
+				graphics.lineTo(x, y);
+			}
+		}		
 		
 		private function printGenerations($gen:Array):void 
 		{

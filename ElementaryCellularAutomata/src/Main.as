@@ -51,7 +51,7 @@
 		
 		private function onRuleChanged(e:Event):void 
 		{
-			_canvas.redraw(_controlBar.rule, _controlBar.pixelSize, _controlBar.colors);
+			_canvas.redraw(_controlBar.rule, _controlBar.pixelSize, _controlBar.colors, _controlBar.useCircles, _controlBar.fillCircles);
 		}
 		
 		private function onSaveRequest(e:Event):void 
